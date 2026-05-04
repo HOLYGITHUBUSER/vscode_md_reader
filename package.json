@@ -21,7 +21,7 @@
     "onCommand:md-reader.openPreview",
     "onCommand:md-reader.toggleView"
   ],
-  "main": "./out/extension-扩展逻辑/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
@@ -62,7 +62,8 @@
   },
   "scripts": {
     "compile": "tsc -p ./",
-    "vscode:prepublish": "npm run compile",
+    "bundle": "esbuild extension-扩展逻辑/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
+    "vscode:prepublish": "npm run bundle",
     "lint": "eslint 'extension-扩展逻辑/**/*.ts'",
     "test": "npm run compile && node --test out/extension-扩展逻辑/test/**/*.test.js",
     "test:e2e": "playwright test --config e2e-浏览器测试/playwright.config.ts",
@@ -81,6 +82,7 @@
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.70.0",
     "@vscode/vsce": "^2.15.0",
+    "esbuild": "^0.28.0",
     "jsdom": "^24.0.0",
     "typescript": "^5.4.0"
   }

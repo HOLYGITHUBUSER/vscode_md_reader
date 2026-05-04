@@ -1,9 +1,9 @@
 node_modules/**
-out/**/*.map
-out/**/test/**
-out/**/helpers/**
+out/**
+extension-扩展逻辑/**
 e2e-浏览器测试/**
 docs/**
+.windsurf/**
 .vscode/**
 .gitignore
 tsconfig.json
