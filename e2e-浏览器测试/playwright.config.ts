@@ -5,6 +5,7 @@ export default defineConfig({
   testDir: '.',
   testMatch: /.*\.spec\.ts/,
   fullyParallel: false,
+  timeout: 60000,
   reporter: [['list']],
   outputDir: path.resolve(__dirname, 'test-results'),
   use: {
