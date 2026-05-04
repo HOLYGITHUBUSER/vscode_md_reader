@@ -40,11 +40,35 @@ export function activate(context: vscode.ExtensionContext) {
     previewProvider.updateTheme();
   });
 
+  // 自动打开预览：当 markdown 文件成为活动编辑器时
+  const activeEditorSub = vscode.window.onDidChangeActiveTextEditor((editor) => {
+    if (editor && editor.document.languageId === 'markdown') {
+      const config = vscode.workspace.getConfiguration('md-reader');
+      const defaultView = config.get<string>('defaultView', 'preview');
+      if (defaultView === 'preview') {
+        statusBarController.setMode(ViewMode.Preview);
+        previewProvider.openPreview(editor.document);
+      }
+    }
+  });
+
+  // 首次激活时，如果当前已是 markdown 文件，也打开预览
+  const activeDoc = vscode.window.activeTextEditor?.document;
+  if (activeDoc && activeDoc.languageId === 'markdown') {
+    const config = vscode.workspace.getConfiguration('md-reader');
+    const defaultView = config.get<string>('defaultView', 'preview');
+    if (defaultView === 'preview') {
+      statusBarController.setMode(ViewMode.Preview);
+      previewProvider.openPreview(activeDoc);
+    }
+  }
+
   context.subscriptions.push(
     openPreviewCmd,
     toggleViewCmd,
     changeDocSub,
     themeChangeSub,
+    activeEditorSub,
     statusBarController,
   );
 }

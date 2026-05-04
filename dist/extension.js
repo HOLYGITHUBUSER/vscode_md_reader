@@ -5634,11 +5634,31 @@ function activate(context) {
   const themeChangeSub = vscode3.window.onDidChangeActiveColorTheme(() => {
     previewProvider.updateTheme();
   });
+  const activeEditorSub = vscode3.window.onDidChangeActiveTextEditor((editor) => {
+    if (editor && editor.document.languageId === "markdown") {
+      const config2 = vscode3.workspace.getConfiguration("md-reader");
+      const defaultView = config2.get("defaultView", "preview");
+      if (defaultView === "preview") {
+        statusBarController.setMode("preview" /* Preview */);
+        previewProvider.openPreview(editor.document);
+      }
+    }
+  });
+  const activeDoc = vscode3.window.activeTextEditor?.document;
+  if (activeDoc && activeDoc.languageId === "markdown") {
+    const config2 = vscode3.workspace.getConfiguration("md-reader");
+    const defaultView = config2.get("defaultView", "preview");
+    if (defaultView === "preview") {
+      statusBarController.setMode("preview" /* Preview */);
+      previewProvider.openPreview(activeDoc);
+    }
+  }
   context.subscriptions.push(
     openPreviewCmd,
     toggleViewCmd,
     changeDocSub,
     themeChangeSub,
+    activeEditorSub,
     statusBarController
   );
 }
