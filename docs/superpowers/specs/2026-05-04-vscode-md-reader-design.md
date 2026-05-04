@@ -30,6 +30,7 @@
 │  │ - 注册命令  │  │ - markdown-it│  │
 │  │ - 监听编辑  │  │ - mermaid.js │  │
 │  │ - 管理面板  │  │ - 自定义 CSS │  │
+│  │ - 状态栏控件│  │              │  │
 │  └─────────────┘  └──────────────┘  │
 └─────────────────────────────────────┘
 ```
@@ -46,6 +47,7 @@
 4. **实时同步** — 编辑器内容变更时自动刷新预览
 5. **主题跟随** — 亮/暗色主题自动切换，Mermaid 主题同步
 6. **代码高亮** — 使用 highlight.js 或 Shiki 对代码块着色
+7. **状态栏切换** — 界面右下角状态栏控件，切换「原始内容」/「预览」显示模式
 
 ### P1 — 应该实现
 
@@ -64,29 +66,59 @@
 
 ```
 vscode_md_reader/
-├── src/
-│   ├── extension.ts          # 入口：注册命令、激活扩展
-│   ├── previewProvider.ts    # Webview 面板管理
-│   ├── markdownEngine.ts    # markdown-it 配置与渲染
-│   └── themeManager.ts      # VS Code 主题监听与 CSS 生成
-├── webview/
-│   ├── index.html            # Webview HTML 模板
-│   ├── main.js               # Webview 入口：消息处理、Mermaid 初始化
-│   ├── styles.css            # 预览样式
-│   └── mermaid-renderer.js   # Mermaid 渲染逻辑
-├── package.json              # 扩展清单
+├── extension-扩展逻辑/
+│   ├── extension.ts              # 入口：注册命令、激活扩展
+│   ├── previewProvider.ts        # Webview 面板管理
+│   ├── markdownEngine.ts        # markdown-it 配置与渲染
+│   ├── themeManager.ts          # VS Code 主题监听与 CSS 生成
+│   ├── statusBarController.ts   # 状态栏切换控件（原始/预览）
+│   └── test/                    # 单元测试（jsdom harness）
+│       ├── helpers/
+│       │   └── webview-harness.ts
+│       ├── markdown-render.test.ts
+│       ├── mermaid-extract.test.ts
+│       ├── statusbar-toggle.test.ts
+│       └── theme-switch.test.ts
+├── webview-预览界面/
+│   ├── index.html                # Webview HTML 模板
+│   ├── main.js                   # Webview 入口：消息处理、Mermaid 初始化
+│   ├── styles.css                # 预览样式
+│   └── mermaid-renderer.js       # Mermaid 渲染逻辑
+├── e2e-浏览器测试/
+│   ├── playwright.config.ts
+│   ├── harness.ts                # Playwright harness：组装自包含 HTML
+│   ├── mermaid-flowchart.spec.ts
+│   ├── mermaid-sequence.spec.ts
+│   ├── mermaid-mindmap.spec.ts
+│   └── theme-sync.spec.ts
+├── package.json                  # 扩展清单
 ├── tsconfig.json
 └── README.md
 ```
 
+## npm scripts
+
+```json
+{
+  "compile": "tsc -p ./",
+  "test": "npm run compile && node --test out/test/**/*.test.js",
+  "test:e2e": "playwright test --config e2e-浏览器测试/playwright.config.ts",
+  "test:full": "npm test && npm run test:e2e && npm run package",
+  "package": "vsce package",
+  "lint": "eslint 'extension-扩展逻辑/**/*.ts'"
+}
+```
+
 ## 数据流
 
-1. 用户打开 `.md` 文件 → 触发 `openPreview` 命令
-2. Extension 创建 Webview 面板，注入初始 HTML + JS/CSS
-3. Extension 监听编辑器 `onDidChangeTextDocument`
-4. 内容变更 → markdown-it 解析 → 发送 HTML 到 Webview
-5. Webview 接收 → 替换内容 → Mermaid 初始化渲染
-6. Mermaid 渲染完成 → 图表可交互
+1. 用户打开 `.md` 文件 → 状态栏显示切换控件（默认「预览」模式）
+2. 点击状态栏控件 → 切换「原始内容」/「预览」模式
+3. 预览模式 → Extension 创建/显示 Webview 面板，注入 HTML + JS/CSS
+4. 原始模式 → 隐藏 Webview，显示文本编辑器
+5. Extension 监听编辑器 `onDidChangeTextDocument`
+6. 内容变更 → markdown-it 解析 → 发送 HTML 到 Webview
+7. Webview 接收 → 替换内容 → Mermaid 初始化渲染
+8. Mermaid 渲染完成 → 图表可交互
 
 ## 主题方案
 
@@ -103,6 +135,33 @@ vscode_md_reader/
 
 ## 测试策略
 
-- 手动测试：各种 Mermaid 图表类型的渲染
-- 集成测试：VS Code 启动扩展、打开预览、编辑同步
-- 回归测试：确保 GFM 扩展语法正常工作
+参考 vscode_csv_reader 的自动化测试模式，采用三层测试：
+
+### 1. 单元测试（Node.js built-in test runner + jsdom）
+
+- 路径：`extension-扩展逻辑/test/`
+- 运行：`npm test` → `npm run compile && node --test out/test/**/*.test.js`
+- 使用 jsdom 模拟 Webview DOM，shim `acquireVsCodeApi` 捕获 `postMessage`
+- 测试内容：
+  - markdown-it 渲染正确性（GFM 语法、脚注、任务列表）
+  - Mermaid 代码块识别与提取
+  - 状态栏切换逻辑
+  - 主题切换逻辑
+
+### 2. E2E 浏览器测试（Playwright）
+
+- 路径：`e2e-浏览器测试/`
+- 运行：`npm run test:e2e` → `playwright test --config e2e-浏览器测试/playwright.config.ts`
+- Harness 模式：组装自包含 HTML，内联真实 webview JS，用 `file://` 加载到 Chromium
+- shim `acquireVsCodeApi`，将 `postMessage` 录入 `window.__posted`
+- 测试内容：
+  - Mermaid 各图表类型真实渲染（flowchart、sequence、mindmap 等）
+  - Mermaid 交互（缩放、拖拽、点击节点）
+  - 状态栏切换的视觉反馈
+  - 主题切换后 Mermaid 主题同步
+  - 代码块高亮
+
+### 3. 全流程测试
+
+- 运行：`npm run test:full` → `npm test && npm run test:e2e && npm run package`
+- 单元 + E2E + 打包，确保发布前一切正常

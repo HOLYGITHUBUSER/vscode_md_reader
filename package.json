@@ -34,13 +34,21 @@
       "properties": {
         "md-reader.defaultView": {
           "type": "string",
-          "enum": ["preview", "source"],
+          "enum": [
+            "preview",
+            "source"
+          ],
           "default": "preview",
           "description": "打开 .md 文件时的默认视图模式"
         },
         "md-reader.mermaidTheme": {
           "type": "string",
-          "enum": ["default", "dark", "forest", "neutral"],
+          "enum": [
+            "default",
+            "dark",
+            "forest",
+            "neutral"
+          ],
           "default": "default",
           "description": "Mermaid 图表主题（自动模式下会跟随 VS Code 主题覆盖）"
         }
@@ -57,13 +65,14 @@
     "package": "vsce package"
   },
   "dependencies": {
+    "highlight.js": "^11.9.0",
     "markdown-it": "^14.0.0",
     "markdown-it-anchor": "^9.0.0",
-    "markdown-it-toc-done-right": "^4.2.0",
-    "highlight.js": "^11.9.0"
+    "markdown-it-toc-done-right": "^4.2.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.0",
+    "@types/jsdom": "^28.0.1",
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.70.0",
     "@vscode/vsce": "^2.15.0",
