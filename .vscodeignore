@@ -1,0 +1,7 @@
+node_modules/**
+out/**
+e2e-浏览器测试/**
+docs/**
+.vscode/**
+.gitignore
+tsconfig.json

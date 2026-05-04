@@ -1,0 +1,73 @@
+{
+  "name": "md-reader",
+  "displayName": "MD Reader",
+  "description": "Markdown 阅读器，完美支持 Mermaid 图表渲染",
+  "version": "0.1.0",
+  "publisher": "md-reader",
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown",
+    "onCommand:md-reader.openPreview",
+    "onCommand:md-reader.toggleView"
+  ],
+  "main": "./out/extension-扩展逻辑/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "md-reader.openPreview",
+        "title": "MD Reader: 打开预览"
+      },
+      {
+        "command": "md-reader.toggleView",
+        "title": "MD Reader: 切换原始/预览"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "MD Reader 配置",
+      "properties": {
+        "md-reader.defaultView": {
+          "type": "string",
+          "enum": ["preview", "source"],
+          "default": "preview",
+          "description": "打开 .md 文件时的默认视图模式"
+        },
+        "md-reader.mermaidTheme": {
+          "type": "string",
+          "enum": ["default", "dark", "forest", "neutral"],
+          "default": "default",
+          "description": "Mermaid 图表主题（自动模式下会跟随 VS Code 主题覆盖）"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "vscode:prepublish": "npm run compile",
+    "lint": "eslint 'extension-扩展逻辑/**/*.ts'",
+    "test": "npm run compile && node --test out/extension-扩展逻辑/test/**/*.test.js",
+    "test:e2e": "playwright test --config e2e-浏览器测试/playwright.config.ts",
+    "test:full": "npm test && npm run test:e2e && npm run package",
+    "package": "vsce package"
+  },
+  "dependencies": {
+    "markdown-it": "^14.0.0",
+    "markdown-it-anchor": "^9.0.0",
+    "markdown-it-toc-done-right": "^4.2.0",
+    "highlight.js": "^11.9.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.0",
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.70.0",
+    "@vscode/vsce": "^2.15.0",
+    "jsdom": "^24.0.0",
+    "typescript": "^5.4.0"
+  }
+}
