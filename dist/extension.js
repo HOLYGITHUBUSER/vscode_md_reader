@@ -5545,11 +5545,12 @@ var PreviewProvider = class {
     const mainJsUri = webview.asWebviewUri(vscode.Uri.joinPath(base, "main.js"));
     const rendererUri = webview.asWebviewUri(vscode.Uri.joinPath(base, "mermaid-renderer.js"));
     const mermaidJsUri = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
+    const cspSource = webview.cspSource;
     return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' https:; script-src 'unsafe-inline' https://cdn.jsdelivr.net; img-src data: https:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${cspSource} 'unsafe-inline' https:; script-src ${cspSource} https://cdn.jsdelivr.net; img-src ${cspSource} data: https:;">
   <link rel="stylesheet" href="${cssUri}">
 </head>
 <body>
