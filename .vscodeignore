@@ -1,5 +1,7 @@
 node_modules/**
-out/**
+out/**/*.map
+out/**/test/**
+out/**/helpers/**
 e2e-浏览器测试/**
 docs/**
 .vscode/**
