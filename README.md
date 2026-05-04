@@ -1,5 +1,7 @@
 # MD Reader
 
+![MD Reader 图标](icon-扩展图标/icon.png)
+
 专为 VS Code / Cursor / Windsurf 打造的 Markdown 阅读器，完美支持 Mermaid 图表渲染，替代内置预览。
 
 ## 架构
@@ -61,6 +63,7 @@ cursor --install-extension md-reader-0.1.0.vsix --force
 
 ```text
 vscode_md_reader/
+├─ icon-扩展图标/              扩展图标与图片资产
 ├─ extension-扩展逻辑/        VS Code 扩展侧 TypeScript 源码、纯逻辑模块和单元测试
 │  ├─ extension.ts           activate/deactivate 入口，注册命令、监听文档和主题
 │  ├─ previewProvider.ts     Webview 面板创建、消息通信、HTML 注入

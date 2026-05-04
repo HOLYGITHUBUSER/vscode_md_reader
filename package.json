@@ -4,6 +4,11 @@
   "description": "Markdown 阅读器，完美支持 Mermaid 图表渲染",
   "version": "0.1.0",
   "publisher": "md-reader",
+  "icon": "icon-扩展图标/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HOLYGITHUBUSER/vscode_md_reader.git"
+  },
   "engines": {
     "vscode": "^1.70.0"
   },

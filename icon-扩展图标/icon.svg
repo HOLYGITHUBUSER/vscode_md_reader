@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 背景 -->
+  <rect width="128" height="128" rx="20" fill="#1e1e2e"/>
+  
+  <!-- 文档轮廓 -->
+  <rect x="24" y="16" width="72" height="96" rx="6" fill="#2d2d44" stroke="#6c6c9c" stroke-width="2"/>
+  
+  <!-- 折角 -->
+  <path d="M78 16 L96 34 L78 34 Z" fill="#3d3d5c" stroke="#6c6c9c" stroke-width="1.5"/>
+  
+  <!-- 文本行 -->
+  <rect x="34" y="44" width="40" height="4" rx="2" fill="#89b4fa"/>
+  <rect x="34" y="54" width="52" height="4" rx="2" fill="#a6adc8" opacity="0.7"/>
+  <rect x="34" y="64" width="36" height="4" rx="2" fill="#a6adc8" opacity="0.7"/>
+  <rect x="34" y="74" width="48" height="4" rx="2" fill="#a6adc8" opacity="0.7"/>
+  
+  <!-- Mermaid 图表图标（小流程图） -->
+  <circle cx="42" cy="94" r="5" fill="#a6e3a5" stroke="#a6e3a5" stroke-width="1"/>
+  <circle cx="68" cy="88" r="5" fill="#f9e2af" stroke="#f9e2af" stroke-width="1"/>
+  <circle cx="68" cy="100" r="5" fill="#f38ba8" stroke="#f38ba8" stroke-width="1"/>
+  <line x1="47" y1="94" x2="63" y2="88" stroke="#89b4fa" stroke-width="1.5"/>
+  <line x1="47" y1="94" x2="63" y2="100" stroke="#89b4fa" stroke-width="1.5"/>
+  
+  <!-- M 标记 -->
+  <text x="30" y="36" font-family="sans-serif" font-size="18" font-weight="bold" fill="#cba6f7">M</text>
+</svg>
