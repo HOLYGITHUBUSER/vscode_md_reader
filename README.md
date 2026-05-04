@@ -1,6 +1,6 @@
 # MD Reader
 
-![MD Reader 图标](icon-扩展图标/icon.png)
+![MD Reader 图标](assets/icon.png)
 
 专为 VS Code / Cursor / Windsurf 打造的 Markdown 阅读器，完美支持 Mermaid 图表渲染，替代内置预览。
 

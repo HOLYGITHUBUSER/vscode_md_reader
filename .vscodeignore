@@ -3,6 +3,7 @@ out/**
 extension-扩展逻辑/**
 e2e-浏览器测试/**
 docs/**
+backup/**
 .windsurf/**
 .vscode/**
 .gitignore
