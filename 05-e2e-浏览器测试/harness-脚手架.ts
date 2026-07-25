@@ -9,6 +9,11 @@ export interface HarnessConfig {
   mermaidTheme?: string;
 }
 
+/**
+ * e2e 最小壳：仅 #md-content + mermaid。
+ * webview-main.js 对缺失的 .md-tabs / #md-source 必须 null-safe，
+ * 且不得在初始化时清空 #md-content。
+ */
 export function writeHarnessHtml(cfg: HarnessConfig): { url: string; dir: string } {
   const mainJs = fs.readFileSync(path.join(REPO_ROOT, '02-webview-预览界面', 'webview-main.js'), 'utf8');
   const rendererJs = fs.readFileSync(path.join(REPO_ROOT, '02-webview-预览界面', 'webview-mermaid-renderer.js'), 'utf8');

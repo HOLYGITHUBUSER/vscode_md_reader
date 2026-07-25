@@ -13,3 +13,6 @@ test-results/
 # Timestamped packages stay local
 07-artifacts-安装包/md-reader-*-20*.vsix
 07-artifacts-安装包/md-reader-v*-20*.vsix
+
+# 本地截图/压测产物，不进仓库
+04-samples-试用样例/screenshots-截图/

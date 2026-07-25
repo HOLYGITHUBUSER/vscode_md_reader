@@ -1,26 +1,33 @@
 import * as vscode from 'vscode';
+import {
+  EditorMode,
+  getStatusBarText,
+  parseViewMode,
+  toggleView,
+  ViewMode,
+} from './viewMode.js';
 
-export enum ViewMode {
-  Preview = 'preview',
-  Source = 'source',
-}
+export {
+  EditorMode,
+  getStatusBarText,
+  parseViewMode,
+  toggleView,
+  ViewMode,
+} from './viewMode.js';
 
-export function toggleView(current: ViewMode): ViewMode {
-  return current === ViewMode.Preview ? ViewMode.Source : ViewMode.Preview;
-}
+type ModeListener = (mode: ViewMode) => void;
 
-export function getStatusBarText(mode: ViewMode): string {
-  return mode === ViewMode.Preview ? '$(eye) 预览' : '$(code) 原始';
-}
-
-export class StatusBarController {
+/**
+ * 状态栏展示当前标签模式；点击循环 source ↔ preview。
+ * 模式变更通过 onModeChange 通知 Custom Editor。
+ */
+export class StatusBarController implements vscode.Disposable {
   private item: vscode.StatusBarItem;
   private currentMode: ViewMode;
-  private onToggle: (mode: ViewMode) => void;
+  private readonly listeners = new Set<ModeListener>();
 
-  constructor(onToggle: (mode: ViewMode) => void) {
-    this.onToggle = onToggle;
-    this.currentMode = ViewMode.Preview;
+  constructor(initial: ViewMode = ViewMode.Preview) {
+    this.currentMode = initial;
     this.item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
     this.item.command = 'md-reader.toggleView';
     this.updateDisplay();
@@ -29,13 +36,33 @@ export class StatusBarController {
 
   private updateDisplay(): void {
     this.item.text = getStatusBarText(this.currentMode);
-    this.item.tooltip = this.currentMode === ViewMode.Preview ? '点击切换到原始内容' : '点击切换到预览';
+    this.item.tooltip = '点击切换：源码 ↔ 预览（同一界面标签）';
+  }
+
+  private notify(): void {
+    for (const listener of this.listeners) {
+      try {
+        listener(this.currentMode);
+      } catch {
+        // ignore listener errors
+      }
+    }
+  }
+
+  /** 状态栏 / 命令切换后通知打开中的阅读器 */
+  onModeChange(listener: ModeListener): vscode.Disposable {
+    this.listeners.add(listener);
+    return {
+      dispose: () => {
+        this.listeners.delete(listener);
+      },
+    };
   }
 
   toggle(): ViewMode {
     this.currentMode = toggleView(this.currentMode);
     this.updateDisplay();
-    this.onToggle(this.currentMode);
+    this.notify();
     return this.currentMode;
   }
 
@@ -43,12 +70,22 @@ export class StatusBarController {
     return this.currentMode;
   }
 
-  setMode(mode: ViewMode): void {
+  setMode(mode: ViewMode, opts?: { silent?: boolean }): void {
     this.currentMode = mode;
+    this.updateDisplay();
+    if (!opts?.silent) {
+      this.notify();
+    }
+  }
+
+  /** webview 顶部标签切换时仅同步状态栏文案，避免回环 */
+  syncFromWebview(mode: EditorMode | string): void {
+    this.currentMode = parseViewMode(mode, this.currentMode);
     this.updateDisplay();
   }
 
   dispose(): void {
+    this.listeners.clear();
     this.item.dispose();
   }
 }

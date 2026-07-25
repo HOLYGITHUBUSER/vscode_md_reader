@@ -1,31 +1,27 @@
 import assert from 'assert';
 import { describe, it } from 'node:test';
-
-// 纯逻辑测试，不导入依赖 vscode API 的 StatusBarController 类
-enum ViewMode {
-  Preview = 'preview',
-  Source = 'source',
-}
-
-function toggleView(current: ViewMode): ViewMode {
-  return current === ViewMode.Preview ? ViewMode.Source : ViewMode.Preview;
-}
-
-function getStatusBarText(mode: ViewMode): string {
-  return mode === ViewMode.Preview ? '$(eye) 预览' : '$(code) 原始';
-}
+import {
+  getStatusBarText,
+  parseViewMode,
+  toggleView,
+  ViewMode,
+} from '../viewMode.js';
 
 describe('statusBarController logic', () => {
-  it('toggles from preview to source', () => {
+  it('cycles source → preview → source', () => {
+    assert.strictEqual(toggleView(ViewMode.Source), ViewMode.Preview);
     assert.strictEqual(toggleView(ViewMode.Preview), ViewMode.Source);
   });
 
-  it('toggles from source to preview', () => {
-    assert.strictEqual(toggleView(ViewMode.Source), ViewMode.Preview);
+  it('returns correct status bar text', () => {
+    assert.strictEqual(getStatusBarText(ViewMode.Source), '$(code) 源码');
+    assert.strictEqual(getStatusBarText(ViewMode.Preview), '$(eye) 预览');
   });
 
-  it('returns correct status bar text', () => {
-    assert.strictEqual(getStatusBarText(ViewMode.Preview), '$(eye) 预览');
-    assert.strictEqual(getStatusBarText(ViewMode.Source), '$(code) 原始');
+  it('parseViewMode accepts source/preview and falls back', () => {
+    assert.strictEqual(parseViewMode('source'), ViewMode.Source);
+    assert.strictEqual(parseViewMode('preview'), ViewMode.Preview);
+    assert.strictEqual(parseViewMode('split', ViewMode.Preview), ViewMode.Preview);
+    assert.strictEqual(parseViewMode(undefined, ViewMode.Source), ViewMode.Source);
   });
 });

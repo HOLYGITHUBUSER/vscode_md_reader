@@ -1,7 +1,7 @@
 {
   "name": "md-reader",
   "displayName": "MD Reader",
-  "description": "Markdown 阅读器，完美支持 Mermaid 图表渲染",
+  "description": "Markdown 阅读器：同一界面顶部标签切换源码/预览，完美支持 Mermaid",
   "version": "0.1.0",
   "publisher": "md-reader",
   "license": "MIT",
@@ -18,20 +18,37 @@
     "Other"
   ],
   "activationEvents": [
+    "onStartupFinished",
     "onLanguage:markdown",
+    "onCustomEditor:md-reader.editor",
     "onCommand:md-reader.openPreview",
     "onCommand:md-reader.toggleView"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "customEditors": [
+      {
+        "viewType": "md-reader.editor",
+        "displayName": "MD Reader",
+        "selector": [
+          {
+            "filenamePattern": "*.md"
+          },
+          {
+            "filenamePattern": "*.markdown"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
     "commands": [
       {
         "command": "md-reader.openPreview",
-        "title": "MD Reader: 打开预览"
+        "title": "MD Reader: 打开阅读器"
       },
       {
         "command": "md-reader.toggleView",
-        "title": "MD Reader: 切换原始/预览"
+        "title": "MD Reader: 切换源码/预览"
       }
     ],
     "configuration": {
@@ -45,18 +62,27 @@
             "source"
           ],
           "default": "preview",
-          "description": "打开 .md 文件时的默认视图模式"
+          "description": "打开阅读器时的默认标签：预览（默认）或源码"
+        },
+        "md-reader.autoOpenReader": {
+          "type": "boolean",
+          "default": true,
+          "description": "为 true 时把 *.md/*.markdown 关联到 MD Reader，并用阅读器打开文本标签；改为 false 时清除本扩展写入的关联"
         },
         "md-reader.mermaidTheme": {
           "type": "string",
           "enum": [
-            "default",
+            "auto",
+            "cursor",
             "dark",
+            "default",
+            "light",
+            "neutral",
             "forest",
-            "neutral"
+            "base"
           ],
-          "default": "default",
-          "description": "Mermaid 图表主题（自动模式下会跟随 VS Code 主题覆盖）"
+          "default": "auto",
+          "description": "Mermaid 风格：auto/cursor/dark=Cursor 暗色简洁灰；default/light=浅色简洁；neutral/forest/base=官方皮肤"
         }
       }
     }
@@ -69,8 +95,7 @@
     "lint": "eslint '01-extension-扩展逻辑/**/*.ts'",
     "test": "npm run compile && node --test \"out/test-单元测试/**/*.test.js\"",
     "test:e2e": "playwright test --config 05-e2e-浏览器测试/playwright-配置.ts",
-    "test:full": "npm test && npm run test:e2e && npm run package:force",
-    "install:cursor": "python3 -c \"import pathlib,subprocess,sys; d=pathlib.Path('07-artifacts-安装包'); vs=sorted(d.glob('*.vsix'), key=lambda p:p.stat().st_mtime); sys.exit('no vsix') if not vs else subprocess.check_call(['cursor','--install-extension',str(vs[-1]),'--force'])\""
+    "test:full": "npm test && npm run test:e2e && npm run package:force"
   },
   "dependencies": {
     "markdown-it": "^14.0.0"

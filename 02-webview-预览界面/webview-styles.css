@@ -1,86 +1,620 @@
+/**
+ * MD Reader Webview
+ * 顶部标签（源码 | 预览）+ 全屏单面板
+ * 预览排版对齐 VS Code 内置 Markdown Preview（dark-friendly）
+ */
+
 :root {
-  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-code: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  --md-font: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif);
+  --md-font-mono: var(--vscode-editor-font-family, 'SF Mono', Menlo, Monaco, Consolas, 'Courier New', monospace);
+  --md-fg: var(--vscode-editor-foreground, #cccccc);
+  --md-bg: var(--vscode-editor-background, #1e1e1e);
+  --md-fg-muted: var(--vscode-descriptionForeground, #9d9d9d);
+  --md-link: var(--vscode-textLink-foreground, #3794ff);
+  --md-link-active: var(--vscode-textLink-activeForeground, #3794ff);
+  --md-border: var(--vscode-panel-border, rgba(128, 128, 128, 0.35));
+  --md-code-bg: var(--vscode-textCodeBlock-background, rgba(255, 255, 255, 0.06));
+  --md-pre-bg: var(--vscode-textPreformat-background, rgba(255, 255, 255, 0.06));
+  --md-quote-border: var(--vscode-textBlockQuote-border, #606060);
+  --md-quote-bg: var(--vscode-textBlockQuote-background, rgba(127, 127, 127, 0.1));
+  --md-table-border: var(--vscode-editorWidget-border, #3c3c3c);
+  --md-hr: var(--vscode-editorWidget-border, #454545);
+  --md-checkbox: var(--vscode-checkbox-background, #3c3c3c);
+  --md-checkbox-border: var(--vscode-checkbox-border, #6b6b6b);
+  --md-checkbox-fg: var(--vscode-checkbox-foreground, #f0f0f0);
+  --md-focus: var(--vscode-focusBorder, #007fd4);
+  --md-selection: var(--vscode-editor-selectionBackground, rgba(38, 79, 120, 0.5));
+  --md-tab-active: var(--vscode-tab-activeForeground, var(--md-fg));
+  --md-tab-inactive: var(--vscode-tab-inactiveForeground, var(--md-fg-muted));
+  --md-tab-bg: var(--vscode-editorGroupHeader-tabsBackground, #252526);
+  --md-tab-active-bg: var(--vscode-tab-activeBackground, var(--md-bg));
+  --md-tab-border: var(--vscode-tab-border, var(--md-border));
+  --md-tab-active-border: var(--vscode-tab-activeBorderTop, var(--md-focus));
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--md-bg);
+  color: var(--md-fg);
 }
 
 body {
-  font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.7;
-  color: var(--vscode-editor-foreground, #333);
-  background: var(--vscode-editor-background, #fff);
-  padding: 24px 32px;
-  max-width: 900px;
-  margin: 0 auto;
+  font-family: var(--md-font);
+  font-size: var(--vscode-font-size, 14px);
+  line-height: 1.6;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
-  line-height: 1.3;
-}
-
-h1 { font-size: 1.8em; border-bottom: 1px solid var(--vscode-editorWidget-border, #ddd); padding-bottom: 0.3em; }
-h2 { font-size: 1.5em; border-bottom: 1px solid var(--vscode-editorWidget-border, #ddd); padding-bottom: 0.25em; }
-
-a { color: var(--vscode-textLink-foreground, #0066cc); text-decoration: none; }
-a:hover { text-decoration: underline; }
-
-code {
-  font-family: var(--font-code);
-  background: var(--vscode-textCodeBlock-background, #f5f5f5);
-  padding: 2px 5px;
-  border-radius: 3px;
-  font-size: 0.9em;
-}
-
-pre {
-  background: var(--vscode-textCodeBlock-background, #f5f5f5);
-  padding: 14px;
-  border-radius: 6px;
-  overflow-x: auto;
+/* ========== Shell：顶栏 Tabs + 全高内容 ========== */
+body.md-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
   line-height: 1.5;
 }
 
-pre code { background: none; padding: 0; }
+/* VS Code 风格顶栏标签 */
+.md-tabs {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  height: 35px;
+  min-height: 35px;
+  padding: 0;
+  margin: 0;
+  gap: 0;
+  border-bottom: 1px solid var(--md-tab-border);
+  background: var(--md-tab-bg);
+  user-select: none;
+}
 
-table { border-collapse: collapse; width: 100%; margin: 1em 0; }
-th, td { border: 1px solid var(--vscode-editorWidget-border, #ddd); padding: 8px 12px; text-align: left; }
-th { background: var(--vscode-editor-background, #fafafa); font-weight: 600; }
+.md-tab,
+.md-tabs [data-mode],
+.md-mode-btn {
+  appearance: none;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-width: 72px;
+  padding: 0 16px;
+  margin: 0;
+  border: none;
+  border-right: 1px solid transparent;
+  background: transparent;
+  color: var(--md-tab-inactive);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  box-sizing: border-box;
+}
 
-blockquote { border-left: 4px solid var(--vscode-editorWidget-border, #ddd); margin: 1em 0; padding: 0.5em 1em; color: var(--vscode-descriptionForeground, #666); }
+.md-tab:hover,
+.md-tabs [data-mode]:hover,
+.md-mode-btn:hover {
+  color: var(--md-tab-active);
+  background: rgba(255, 255, 255, 0.04);
+}
 
-img { max-width: 100%; border-radius: 4px; }
+.md-tab.is-active,
+.md-tabs [data-mode].is-active,
+.md-mode-btn.is-active {
+  color: var(--md-tab-active);
+  background: var(--md-tab-active-bg);
+  font-weight: 500;
+}
 
-/* Mermaid 容器 */
+/* 活动标签顶边高亮（VS Code tab active border） */
+.md-tab.is-active::before,
+.md-tabs [data-mode].is-active::before,
+.md-mode-btn.is-active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--md-tab-active-border);
+}
+
+.md-tab:focus-visible,
+.md-tabs [data-mode]:focus-visible,
+.md-mode-btn:focus-visible {
+  outline: 1px solid var(--md-focus);
+  outline-offset: -1px;
+  z-index: 1;
+}
+
+/* 主内容区：占满剩余视口 */
+.md-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--md-bg);
+  position: relative;
+}
+
+/* ========== 源码：全屏 monospace textarea ========== */
+.md-source,
+#md-source {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 12px 16px;
+  border: none;
+  resize: none;
+  outline: none;
+  background: var(--vscode-editor-background, var(--md-bg));
+  color: var(--vscode-editor-foreground, var(--md-fg));
+  font-family: var(--md-font-mono);
+  font-size: var(--vscode-editor-font-size, 13px);
+  line-height: 1.55;
+  tab-size: 2;
+  white-space: pre;
+  overflow: auto;
+}
+
+.md-source:focus,
+#md-source:focus {
+  box-shadow: inset 0 0 0 1px var(--md-focus);
+}
+
+.md-source[hidden],
+.md-source.is-hidden,
+#md-source[hidden],
+#md-source.is-hidden {
+  display: none !important;
+}
+
+/* ========== 预览：全屏滚动阅读区 ========== */
+.md-preview,
+#md-content.md-preview,
+body.md-shell #md-content {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 980px;
+  box-sizing: border-box;
+  overflow: auto;
+  margin: 0 auto;
+  padding: 28px 48px 64px;
+  align-self: stretch;
+}
+
+/* 在 flex 列中居中可读宽度，同时占满高度滚动 */
+body.md-shell .md-main > #md-content,
+body.md-shell .md-pane-preview > #md-content {
+  max-width: 980px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 源码模式下隐藏预览；预览模式下隐藏源码（JS 也会设 hidden） */
+body.md-shell[data-mode='source'] #md-content,
+body.md-shell[data-layout='source'] #md-content,
+#md-content[hidden],
+#md-content.is-hidden {
+  display: none !important;
+}
+
+body.md-shell[data-mode='preview'] #md-source,
+body.md-shell[data-layout='preview'] #md-source {
+  display: none !important;
+}
+
+/* 旧分栏：降级为单面板堆叠，隐藏分隔条与次要装饰 */
+body.md-shell .md-split {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body.md-shell .md-splitter,
+body.md-shell .md-pane-label,
+body.md-shell .md-toolbar .md-hint {
+  display: none !important;
+}
+
+body.md-shell .md-pane {
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body.md-shell[data-mode='source'] .md-pane-preview,
+body.md-shell[data-layout='source'] .md-pane-preview {
+  display: none !important;
+}
+
+body.md-shell[data-mode='preview'] .md-pane-source,
+body.md-shell[data-layout='preview'] .md-pane-source,
+body.md-shell[data-mode='split'] .md-pane-source,
+body.md-shell[data-layout='split'] .md-pane-source {
+  display: none !important;
+}
+
+/* split 映射为 preview：只显示预览 */
+body.md-shell[data-mode='split'] .md-pane-preview,
+body.md-shell[data-layout='split'] .md-pane-preview {
+  display: flex !important;
+  flex: 1;
+}
+
+/* 非 shell（e2e harness）：仅 #md-content */
+body:not(.md-shell) #md-content {
+  box-sizing: border-box;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 48px 64px;
+}
+
+#md-content > :first-child {
+  margin-top: 0 !important;
+}
+
+/* —— 标题 —— */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  color: var(--md-fg);
+}
+
+h1 {
+  font-size: 2em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--md-border);
+  margin-top: 0;
+}
+
+h2 {
+  font-size: 1.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--md-border);
+}
+
+h3 {
+  font-size: 1.25em;
+}
+
+h4 {
+  font-size: 1em;
+}
+
+h5 {
+  font-size: 0.875em;
+}
+
+h6 {
+  font-size: 0.85em;
+  color: var(--md-fg-muted);
+}
+
+/* —— 段落 / 列表 —— */
+p {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+ul,
+ol {
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding-left: 2em;
+}
+
+li {
+  margin: 0.25em 0;
+}
+
+li > p {
+  margin: 0.4em 0;
+}
+
+li + li {
+  margin-top: 0.25em;
+}
+
+/* —— 链接 —— */
+a {
+  color: var(--md-link);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--md-link-active);
+  text-decoration: underline;
+}
+
+a:focus {
+  outline: 1px solid var(--md-focus);
+  outline-offset: 1px;
+}
+
+/* —— 强调 —— */
+strong {
+  font-weight: 600;
+}
+
+em {
+  font-style: italic;
+}
+
+del,
+s {
+  text-decoration: line-through;
+  opacity: 0.85;
+}
+
+/* —— 分割线 —— */
+hr {
+  height: 0;
+  margin: 24px 0;
+  border: none;
+  border-bottom: 1px solid var(--md-hr);
+}
+
+/* —— 行内代码 —— */
+code {
+  font-family: var(--md-font-mono);
+  font-size: 0.92em;
+  background: var(--md-code-bg);
+  padding: 0.15em 0.4em;
+  margin: 0;
+  border-radius: 4px;
+}
+
+/* —— 代码块 —— */
+pre {
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  overflow: auto;
+  font-size: 0.92em;
+  line-height: 1.45;
+  background: var(--md-pre-bg);
+  border-radius: 6px;
+  border: 1px solid transparent;
+}
+
+body.vscode-light pre,
+body.vscode-high-contrast-light pre {
+  border-color: var(--md-border);
+}
+
+pre code {
+  display: inline;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  line-height: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  font-size: inherit;
+  color: inherit;
+  word-break: normal;
+  white-space: pre;
+}
+
+/* —— 引用 —— */
+blockquote {
+  margin: 0 0 16px;
+  padding: 0 1em;
+  color: var(--md-fg-muted);
+  border-left: 0.25em solid var(--md-quote-border);
+  background: var(--md-quote-bg);
+}
+
+blockquote > :first-child {
+  margin-top: 0;
+}
+
+blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* —— 表格 —— */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 16px;
+  display: block;
+  overflow-x: auto;
+  border: 1px solid var(--md-table-border);
+  border-radius: 4px;
+}
+
+table th,
+table td {
+  padding: 8px 13px;
+  border: 1px solid var(--md-table-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+table th {
+  font-weight: 600;
+  background: rgba(127, 127, 127, 0.08);
+}
+
+table tr:nth-child(2n) {
+  background: rgba(127, 127, 127, 0.04);
+}
+
+body.vscode-light table th,
+body.vscode-high-contrast-light table th {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* —— 图片 —— */
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* —— 任务列表 —— */
+ul.contains-task-list {
+  list-style: none;
+  padding-left: 0.4em;
+}
+
+li.task-list-item {
+  list-style: none;
+  margin-left: 0;
+  padding-left: 0.1em;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+li.task-list-item > p {
+  margin: 0;
+  display: inline;
+}
+
+.task-list-item-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  margin: 0.28em 0 0;
+  flex-shrink: 0;
+  border: 1px solid var(--md-checkbox-border);
+  border-radius: 3px;
+  background: var(--md-checkbox);
+  position: relative;
+  cursor: default;
+  vertical-align: middle;
+}
+
+.task-list-item-checkbox:checked {
+  background: #0e639c;
+  border-color: #0e639c;
+}
+
+.task-list-item-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.task-list-legacy {
+  list-style: none;
+  padding-left: 0.4em;
+}
+
+/* —— Mermaid（对齐 Cursor 暗色预览：透底、细线、灰节点） —— */
 .mermaid-container {
-  margin: 1.2em 0;
+  margin: 1.25em 0 1.6em;
   text-align: center;
   overflow-x: auto;
+  padding: 16px 12px;
+  background: transparent;
+  border-radius: 8px;
+  transition: transform 0.15s ease;
+}
+
+.mermaid-container.is-zoomed {
+  overflow: visible;
+  z-index: 2;
+}
+
+.mermaid-container svg {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+  /* 避免 SVG 自带白底 */
+  background: transparent !important;
 }
 
 .mermaid {
   display: flex;
   justify-content: center;
+  margin: 1em 0;
+}
+
+/* 隐藏 mermaid 偶发注入的默认 error 爆炸图标块（我们用 .mermaid-error） */
+.mermaid-container svg[aria-roledescription='error'],
+.mermaid-container .error-icon,
+#md-content > svg[aria-roledescription='error'] {
+  display: none !important;
 }
 
 .mermaid-error {
-  border: 1px solid #e74c3c;
-  background: #ffeaea;
-  color: #c0392b;
-  padding: 12px;
+  border: 1px solid rgba(241, 76, 76, 0.55);
+  background: rgba(241, 76, 76, 0.1);
+  color: #f14c4c;
+  padding: 12px 14px;
   border-radius: 6px;
-  font-family: var(--font-code);
+  font-family: var(--md-font-mono);
   font-size: 0.85em;
   white-space: pre-wrap;
   text-align: left;
+  margin: 1em 0;
+  line-height: 1.45;
 }
 
-/* 任务列表 */
-input[type="checkbox"] { margin-right: 6px; }
+/* —— 选中文字 —— */
+::selection {
+  background: var(--md-selection);
+}
 
-/* TOC */
-.toc { background: var(--vscode-editor-background, #f9f9f9); border: 1px solid var(--vscode-editorWidget-border, #ddd); border-radius: 6px; padding: 12px 16px; margin: 1em 0; }
-.toc ul { list-style: none; padding-left: 1.2em; }
-.toc a { text-decoration: none; }
-.toc a:hover { text-decoration: underline; }
+/* —— TOC —— */
+.toc {
+  background: rgba(127, 127, 127, 0.08);
+  border: 1px solid var(--md-border);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 1em 0 1.5em;
+}
+
+.toc ul {
+  list-style: none;
+  padding-left: 1.2em;
+  margin: 0.25em 0;
+}
+
+.toc > ul {
+  padding-left: 0;
+}
+
+.toc a {
+  text-decoration: none;
+}
+
+.toc a:hover {
+  text-decoration: underline;
+}
