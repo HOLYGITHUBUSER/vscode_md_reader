@@ -1,0 +1,39 @@
+# 产品设计
+
+记录 MD Reader 的定位、核心能力与产品决策。  
+**改用户可见行为时，必须更新本文功能说明或决策表。**
+
+## 定位
+
+面向 VS Code / Cursor / Windsurf 的 **Markdown 阅读预览器**：替代内置预览，优先阅读体验与 **Mermaid 图表** 渲染；保持在编辑器内完成，不强制外跳浏览器。
+
+## 核心能力
+
+| 能力 | 说明 |
+| --- | --- |
+| 预览面板 | 命令 / 状态栏打开侧边 Webview 预览 |
+| Markdown 渲染 | markdown-it + GFM（表格、任务列表、删除线等） |
+| Mermaid | flowchart / sequence / mindmap 等；CDN 加载 mermaid.js |
+| 主题跟随 | VS Code 亮暗色切换时同步 Mermaid 主题 |
+| 状态栏 | 右下角「预览 / 原始」一键切换 |
+| 实时同步 | 编辑 `.md` 时自动刷新预览内容 |
+| 代码高亮 | highlight.js（依赖侧） |
+
+## 配置
+
+| 设置 | 默认 | 说明 |
+| --- | --- | --- |
+| `md-reader.defaultView` | `preview` | 打开 markdown 时默认预览或源码 |
+| `md-reader.mermaidTheme` | `default` | Mermaid 主题；自动模式会随 VS Code 主题覆盖 |
+
+## 产品决策记录
+
+| 日期 | 改动 | 原因 | 必测 |
+| --- | --- | --- | --- |
+| 2026-05-04 | 首版：Webview 预览 + Mermaid + 状态栏 | 替代内置预览、图表可用 | 单测 + 4 条 e2e Mermaid |
+| 2026-07-25 | 工程结构对齐 CSV：编号目录 / 一键打包 / 文档合并 | 多项目一致可维护 | 编译、单测、e2e、装包 |
+
+## 更新规则
+
+- 改 UI/交互/默认配置 → 改功能说明 + 决策表加一行。
+- 仅内部重构、行为不变 → 可不改决策表；目录/模块变化改 `02-handbook-工程手册.md`。

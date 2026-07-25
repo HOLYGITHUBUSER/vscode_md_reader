@@ -4,7 +4,8 @@
   "description": "Markdown 阅读器，完美支持 Mermaid 图表渲染",
   "version": "0.1.0",
   "publisher": "md-reader",
-  "icon": "assets/icon.png",
+  "license": "MIT",
+  "icon": "00-config-工程配置/icon-扩展图标.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/HOLYGITHUBUSER/vscode_md_reader.git"
@@ -21,7 +22,7 @@
     "onCommand:md-reader.openPreview",
     "onCommand:md-reader.toggleView"
   ],
-  "main": "./dist/extension.js",
+  "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
@@ -61,28 +62,26 @@
     }
   },
   "scripts": {
-    "compile": "tsc -p ./",
-    "bundle": "esbuild extension-扩展逻辑/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
-    "vscode:prepublish": "npm run bundle",
-    "lint": "eslint 'extension-扩展逻辑/**/*.ts'",
-    "test": "npm run compile && node --test out/extension-扩展逻辑/test/**/*.test.js",
-    "test:e2e": "playwright test --config e2e-浏览器测试/playwright.config.ts",
-    "test:full": "npm test && npm run test:e2e && npm run package",
-    "package": "vsce package"
+    "compile": "tsc -p ./00-config-工程配置/tsconfig-编译配置.json",
+    "vscode:prepublish": "npm run compile",
+    "package:force": "python3 03-script-构建脚本/build-编译打包.py",
+    "package": "python3 03-script-构建脚本/build-编译打包.py --bump",
+    "lint": "eslint '01-extension-扩展逻辑/**/*.ts'",
+    "test": "npm run compile && node --test \"out/test-单元测试/**/*.test.js\"",
+    "test:e2e": "playwright test --config 05-e2e-浏览器测试/playwright-配置.ts",
+    "test:full": "npm test && npm run test:e2e && npm run package:force",
+    "install:cursor": "python3 -c \"import pathlib,subprocess,sys; d=pathlib.Path('07-artifacts-安装包'); vs=sorted(d.glob('*.vsix'), key=lambda p:p.stat().st_mtime); sys.exit('no vsix') if not vs else subprocess.check_call(['cursor','--install-extension',str(vs[-1]),'--force'])\""
   },
   "dependencies": {
-    "highlight.js": "^11.9.0",
-    "markdown-it": "^14.0.0",
-    "markdown-it-anchor": "^9.0.0",
-    "markdown-it-toc-done-right": "^4.2.0"
+    "markdown-it": "^14.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.0",
     "@types/jsdom": "^28.0.1",
+    "@types/markdown-it": "^14.1.2",
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.70.0",
     "@vscode/vsce": "^2.15.0",
-    "esbuild": "^0.28.0",
     "jsdom": "^24.0.0",
     "typescript": "^5.4.0"
   }

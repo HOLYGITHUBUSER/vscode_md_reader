@@ -1,2 +1,15 @@
-node_modules/
 out/
+node_modules/
+.vscode-test/
+.DS_Store
+test-results/
+05-e2e-浏览器测试/test-results/
+05-e2e-浏览器测试/visual-review/
+99-backup-归档旧文件/
+
+# VSIX only under 07-artifacts-安装包/; never at repo root
+/*.vsix
+
+# Timestamped packages stay local
+07-artifacts-安装包/md-reader-*-20*.vsix
+07-artifacts-安装包/md-reader-v*-20*.vsix
