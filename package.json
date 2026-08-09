@@ -1,9 +1,9 @@
 {
-  "name": "md-reader",
-  "displayName": "MD Reader",
-  "description": "Markdown 阅读器：同一界面顶部标签切换源码/预览，完美支持 Mermaid",
+  "name": "md-editor",
+  "displayName": "MD Editor",
+  "description": "Markdown 所见即所得编辑器：可在预览页直接编辑并回写 Markdown",
   "version": "0.1.0",
-  "publisher": "md-reader",
+  "publisher": "md-editor",
   "license": "MIT",
   "icon": "00-config-工程配置/icon-扩展图标.png",
   "repository": {
@@ -20,16 +20,16 @@
   "activationEvents": [
     "onStartupFinished",
     "onLanguage:markdown",
-    "onCustomEditor:md-reader.editor",
-    "onCommand:md-reader.openPreview",
-    "onCommand:md-reader.toggleView"
+    "onCustomEditor:md-editor.editor",
+    "onCommand:md-editor.openPreview",
+    "onCommand:md-editor.toggleView"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "customEditors": [
       {
-        "viewType": "md-reader.editor",
-        "displayName": "MD Reader",
+        "viewType": "md-editor.editor",
+        "displayName": "MD Editor",
         "selector": [
           {
             "filenamePattern": "*.md"
@@ -43,19 +43,19 @@
     ],
     "commands": [
       {
-        "command": "md-reader.openPreview",
-        "title": "MD Reader: 打开阅读器"
+        "command": "md-editor.openPreview",
+        "title": "MD Editor: 打开阅读器"
       },
       {
-        "command": "md-reader.toggleView",
-        "title": "MD Reader: 切换源码/预览"
+        "command": "md-editor.toggleView",
+        "title": "MD Editor: 切换源码/预览"
       }
     ],
     "configuration": {
       "type": "object",
-      "title": "MD Reader 配置",
+      "title": "MD Editor 配置",
       "properties": {
-        "md-reader.defaultView": {
+        "md-editor.defaultView": {
           "type": "string",
           "enum": [
             "preview",
@@ -64,12 +64,12 @@
           "default": "preview",
           "description": "打开阅读器时的默认标签：预览（默认）或源码"
         },
-        "md-reader.autoOpenReader": {
+        "md-editor.autoOpenReader": {
           "type": "boolean",
           "default": true,
-          "description": "为 true 时把 *.md/*.markdown 关联到 MD Reader，并用阅读器打开文本标签；改为 false 时清除本扩展写入的关联"
+          "description": "为 true 时把 *.md/*.markdown 关联到 MD Editor，并用阅读器打开文本标签；改为 false 时清除本扩展写入的关联"
         },
-        "md-reader.mermaidTheme": {
+        "md-editor.mermaidTheme": {
           "type": "string",
           "enum": [
             "auto",
@@ -98,13 +98,15 @@
     "test:full": "npm test && npm run test:e2e && npm run package:force"
   },
   "dependencies": {
-    "markdown-it": "^14.0.0"
+    "markdown-it": "^14.0.0",
+    "turndown": "^7.2.4"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.0",
     "@types/jsdom": "^28.0.1",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^20.11.0",
+    "@types/turndown": "^5.0.6",
     "@types/vscode": "^1.70.0",
     "@vscode/vsce": "^2.15.0",
     "jsdom": "^24.0.0",

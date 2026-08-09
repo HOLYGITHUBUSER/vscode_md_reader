@@ -14,7 +14,7 @@ const reopening = new Set<string>();
 
 export async function activate(context: vscode.ExtensionContext) {
   const defaultMode = parseViewMode(
-    vscode.workspace.getConfiguration('md-reader').get<string>('defaultView', 'preview'),
+    vscode.workspace.getConfiguration('md-editor').get<string>('defaultView', 'preview'),
     ViewMode.Preview
   );
   statusBarController = new StatusBarController(defaultMode);
@@ -23,7 +23,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   await syncEditorAssociations();
 
-  const openReaderCmd = vscode.commands.registerCommand('md-reader.openPreview', async () => {
+  const openReaderCmd = vscode.commands.registerCommand('md-editor.openPreview', async () => {
     const doc = await resolveMarkdownDocument();
     if (!doc) {
       void vscode.window.showInformationMessage('请先打开一个 Markdown 文件');
@@ -32,7 +32,7 @@ export async function activate(context: vscode.ExtensionContext) {
     await openWithReader(doc.uri);
   });
 
-  const toggleViewCmd = vscode.commands.registerCommand('md-reader.toggleView', () => {
+  const toggleViewCmd = vscode.commands.registerCommand('md-editor.toggleView', () => {
     statusBarController.toggle();
   });
 
@@ -53,7 +53,7 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   const cfgSub = vscode.workspace.onDidChangeConfiguration(async (e) => {
-    if (e.affectsConfiguration('md-reader.autoOpenReader')) {
+    if (e.affectsConfiguration('md-editor.autoOpenReader')) {
       await syncEditorAssociations();
     }
   });
@@ -99,7 +99,7 @@ async function syncEditorAssociations(): Promise<void> {
 
 function isAutoEnabled(): boolean {
   return (
-    vscode.workspace.getConfiguration('md-reader').get<boolean>('autoOpenReader', true) !== false
+    vscode.workspace.getConfiguration('md-editor').get<boolean>('autoOpenReader', true) !== false
   );
 }
 

@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * MD Reader Webview — 顶部标签切换「源码 | 预览」（全屏单面板，非左右分栏）。
+ * MD Editor Webview — 顶部标签切换「源码 | 预览」（全屏单面板，非左右分栏）。
  *
  * ── 期望 HTML 骨架（host / previewProvider 应对齐）──────────────────────────
  *
@@ -53,6 +53,7 @@
   /** @type {'source' | 'preview'} */
   var mode = 'preview';
   var sourceEditTimer = null;
+  var wysiwygEditTimer = null;
   var applyingSource = false;
 
   /**
@@ -139,6 +140,13 @@
     var scrollTop = contentEl.scrollTop;
     var scrollLeft = contentEl.scrollLeft;
     contentEl.innerHTML = html || '';
+    contentEl.setAttribute('contenteditable', 'true');
+    contentEl.setAttribute('spellcheck', 'true');
+    contentEl.querySelectorAll('.mermaid').forEach(function (block) {
+      block.dataset.mdSource = block.textContent || '';
+      block.setAttribute('contenteditable', 'false');
+      block.setAttribute('title', 'Mermaid 图表请在源码标签中编辑');
+    });
     var restore = function () {
       contentEl.scrollTop = scrollTop;
       contentEl.scrollLeft = scrollLeft;
@@ -199,6 +207,15 @@
       sourceEditTimer = setTimeout(function () {
         vscode.postMessage({ type: 'sourceEdit', source: sourceEl.value });
       }, 180);
+    });
+  }
+
+  if (contentEl) {
+    contentEl.addEventListener('input', function () {
+      if (wysiwygEditTimer) clearTimeout(wysiwygEditTimer);
+      wysiwygEditTimer = setTimeout(function () {
+        vscode.postMessage({ type: 'wysiwygEdit', html: contentEl.innerHTML });
+      }, 260);
     });
   }
 

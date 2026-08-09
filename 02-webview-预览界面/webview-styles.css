@@ -1,5 +1,5 @@
 /**
- * MD Reader Webview
+ * MD Editor Webview
  * 顶部标签（源码 | 预览）+ 全屏单面板
  * 预览排版对齐 VS Code 内置 Markdown Preview（dark-friendly）
  */
@@ -477,6 +477,18 @@ img {
   height: auto;
   border-radius: 4px;
   box-sizing: border-box;
+}
+
+.md-preview[contenteditable='true'] {
+  cursor: text;
+}
+
+.md-preview[contenteditable='true']:focus {
+  outline: none;
+}
+
+.md-preview .mermaid[contenteditable='false'] {
+  cursor: default;
 }
 
 /* —— 任务列表 —— */

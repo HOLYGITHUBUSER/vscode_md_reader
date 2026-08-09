@@ -89,10 +89,10 @@ npm run package             # 升 PATCH 再打包
 python3 03-script-构建脚本/build-编译打包.py
 ```
 
-产物：`07-artifacts-安装包/md-reader-v{version}-{YYYYMMDD}-{HHmmss}.vsix`（只保留最新 1 个）。
+产物：`07-artifacts-安装包/md-editor-v{version}-{YYYYMMDD}-{HHmmss}.vsix`（只保留最新 1 个）。
 
 ```bash
-cursor --install-extension 07-artifacts-安装包/md-reader-v….vsix --force
+cursor --install-extension 07-artifacts-安装包/md-editor-v….vsix --force
 # 然后 Developer: Reload Window
 ```
 

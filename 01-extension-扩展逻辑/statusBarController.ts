@@ -29,7 +29,7 @@ export class StatusBarController implements vscode.Disposable {
   constructor(initial: ViewMode = ViewMode.Preview) {
     this.currentMode = initial;
     this.item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-    this.item.command = 'md-reader.toggleView';
+    this.item.command = 'md-editor.toggleView';
     this.updateDisplay();
     this.item.show();
   }

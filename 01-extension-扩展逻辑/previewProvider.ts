@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
+import TurndownService from 'turndown';
 import { renderMarkdown } from './markdownEngine.js';
 import {
   EditorMode,
@@ -12,7 +13,7 @@ import {
  * 单文档 Custom Text Editor：同一界面顶部标签切换「源码 / 预览」全屏视图。
  */
 export class PreviewProvider implements vscode.CustomTextEditorProvider {
-  public static readonly viewType = 'md-reader.editor';
+  public static readonly viewType = 'md-editor.editor';
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -48,7 +49,7 @@ export class PreviewProvider implements vscode.CustomTextEditorProvider {
       localResourceRoots: roots,
     };
 
-    const config = vscode.workspace.getConfiguration('md-reader');
+    const config = vscode.workspace.getConfiguration('md-editor');
     let mode: EditorMode = parseViewMode(
       config.get<string>('defaultView', 'preview'),
       ViewMode.Preview
@@ -63,7 +64,7 @@ export class PreviewProvider implements vscode.CustomTextEditorProvider {
     let ignoreDocEchoUntil = 0;
     /** sourceEdit 串行队列，避免全量 replace 竞态 */
     let editChain: Promise<void> = Promise.resolve();
-    let pendingSource: string | null = null;
+    let pendingEdit: { source: string; refreshPreview: boolean } | null = null;
 
     const buildHtml = (source: string) =>
       rewriteLocalMediaUrls(renderMarkdown(source), document, webviewPanel.webview);
@@ -90,7 +91,7 @@ export class PreviewProvider implements vscode.CustomTextEditorProvider {
       const dark =
         kind === vscode.ColorThemeKind.Dark || kind === vscode.ColorThemeKind.HighContrast;
       const cfgTheme = vscode.workspace
-        .getConfiguration('md-reader')
+        .getConfiguration('md-editor')
         .get<string>('mermaidTheme', 'auto');
       // auto：暗色用 Cursor 简洁灰(dark)，亮色用 light；也可强制 cursor/neutral 等
       const mermaidTheme =
@@ -128,7 +129,7 @@ export class PreviewProvider implements vscode.CustomTextEditorProvider {
       applyMode(m);
     });
 
-    const flushSourceEdit = async (source: string) => {
+    const flushSourceEdit = async (source: string, refreshPreview: boolean) => {
       if (source === document.getText()) return;
       ignoreDocEchoUntil = Date.now() + 400;
       const edit = new vscode.WorkspaceEdit();
@@ -138,22 +139,23 @@ export class PreviewProvider implements vscode.CustomTextEditorProvider {
       );
       edit.replace(document.uri, full, source);
       await vscode.workspace.applyEdit(edit);
-      postPreviewOnly(source);
+      if (refreshPreview) postPreviewOnly(source);
     };
 
-    const enqueueSourceEdit = (source: string) => {
-      pendingSource = source;
+    const enqueueSourceEdit = (source: string, refreshPreview = true) => {
+      pendingEdit = { source, refreshPreview };
       editChain = editChain
         .then(async () => {
-          const latest = pendingSource;
-          pendingSource = null;
+          const latest = pendingEdit;
+          pendingEdit = null;
           if (latest == null) return;
-          await flushSourceEdit(latest);
+          await flushSourceEdit(latest.source, latest.refreshPreview);
           // 队列期间又有新输入
-          while (pendingSource != null) {
-            const again = pendingSource;
-            pendingSource = null;
-            await flushSourceEdit(again);
+          for (;;) {
+            const again = pendingEdit as { source: string; refreshPreview: boolean } | null;
+            if (again == null) break;
+            pendingEdit = null;
+            await flushSourceEdit(again.source, again.refreshPreview);
           }
         })
         .catch(() => {
@@ -181,6 +183,11 @@ export class PreviewProvider implements vscode.CustomTextEditorProvider {
         case 'sourceEdit': {
           if (typeof msg.source !== 'string') break;
           enqueueSourceEdit(msg.source);
+          break;
+        }
+        case 'wysiwygEdit': {
+          if (typeof msg.html !== 'string') break;
+          enqueueSourceEdit(htmlToMarkdown(msg.html), false);
           break;
         }
       }
@@ -259,10 +266,35 @@ export function rewriteLocalMediaUrls(
       try {
         const abs = path.isAbsolute(s) ? s : path.normalize(path.join(baseDir, s));
         const uri = webview.asWebviewUri(vscode.Uri.file(abs));
-        return `${prefix}${quote}${uri.toString()}${quote}`;
+        return `${prefix}${quote}${uri.toString()}${quote} data-md-src="${escapeHtmlAttribute(s)}"`;
       } catch {
         return full;
       }
     }
   );
+}
+
+function escapeHtmlAttribute(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+function htmlToMarkdown(html: string): string {
+  const service = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
+  service.addRule('mdEditorImage', {
+    filter: 'img',
+    replacement: (_content, node) => {
+      const image = node as HTMLElement;
+      const src = image.getAttribute('data-md-src') || image.getAttribute('src') || '';
+      const alt = image.getAttribute('alt') || '';
+      return src ? `![${alt}](${src})` : '';
+    },
+  });
+  service.addRule('mdEditorMermaid', {
+    filter: (node) => node.nodeName === 'DIV' && node.classList.contains('mermaid'),
+    replacement: (_content, node) => {
+      const code = (node as HTMLElement).dataset.mdSource || '';
+      return code ? `\n\n\`\`\`mermaid\n${code}\n\`\`\`\n\n` : '';
+    },
+  });
+  return `${service.turndown(html).trimEnd()}\n`;
 }

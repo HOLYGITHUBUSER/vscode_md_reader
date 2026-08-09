@@ -1,6 +1,6 @@
 # 产品设计
 
-记录 MD Reader 的定位、核心能力与产品决策。  
+记录 MD Editor 的定位、核心能力与产品决策。
 **改用户可见行为时，必须更新本文功能说明或决策表。**
 
 ## 定位
@@ -23,8 +23,8 @@
 
 | 设置 | 默认 | 说明 |
 | --- | --- | --- |
-| `md-reader.defaultView` | `preview` | 打开 markdown 时默认预览或源码 |
-| `md-reader.mermaidTheme` | `default` | Mermaid 主题；自动模式会随 VS Code 主题覆盖 |
+| `md-editor.defaultView` | `preview` | 打开 markdown 时默认预览或源码 |
+| `md-editor.mermaidTheme` | `default` | Mermaid 主题；自动模式会随 VS Code 主题覆盖 |
 
 ## 产品决策记录
 
@@ -34,7 +34,7 @@
 | 2026-07-25 | 工程结构对齐 CSV：编号目录 / 一键打包 / 文档合并 | 多项目一致可维护 | 编译、单测、e2e、装包 |
 | 2026-07-25 | 预览样式对齐 VS Code 内置 Markdown Preview | 截图对比阅读体验 | 任务列表 checkbox、表格、代码块、暗色 Mermaid |
 | 2026-07-25 | 同一界面左右分栏（源码+预览），布局按钮/状态栏切换 | 不再拆多个标签页 | 分栏/源码/预览三态、拖分隔条、源码回写 |
-| 2026-07-25 | 安装后自动用 MD Reader 打开 *.md（全局 editorAssociations） | 免手动 Open With | 双击 md 进阅读器 |
+| 2026-07-25 | 安装后自动用 MD Editor 打开 *.md（全局 editorAssociations） | 免手动 Open With | 双击 md 进阅读器 |
 | 2026-07-25 | 同一界面顶部标签切换「源码 / 预览」（非左右分栏） | 分栏体验差、要标签切换 | 顶栏 tab、状态栏切换、自动关联 |
 
 ## 更新规则

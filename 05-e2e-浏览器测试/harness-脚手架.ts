@@ -32,7 +32,7 @@ export function writeHarnessHtml(cfg: HarnessConfig): { url: string; dir: string
 </script>`;
 
   const html = `<!DOCTYPE html>
-<html lang="zh-CN"><head><meta charset="UTF-8"><title>MD Reader e2e harness</title>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>MD Editor e2e harness</title>
 <style>${stylesCss}</style>
 ${shim}
 </head><body>
@@ -47,7 +47,7 @@ ${shim}
 <script>${mainJs}</script>
 </body></html>`;
 
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'md-reader-e2e-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'md-editor-e2e-'));
   const file = path.join(dir, 'index.html');
   fs.writeFileSync(file, html, 'utf8');
   return { url: `file://${file}`, dir };
